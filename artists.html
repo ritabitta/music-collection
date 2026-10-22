@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>艺人 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --bg: #11120f;
+      --panel: #1c1e19;
+      --text: #f4f3ec;
+      --muted: #aaa99f;
+      --lime: #d9ff62;
+      --line: rgba(255, 255, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    a { color: inherit; }
+
+    main {
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 50px 0 90px;
+    }
+
+    .page-intro {
+      padding: clamp(26px, 6vw, 70px);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(217,255,98,.22), transparent 32%),
+        linear-gradient(135deg, #292b23, #171813);
+      border: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+
+    h1 {
+      max-width: 850px;
+      margin: 16px 0;
+      font-size: clamp(2.8rem, 8vw, 6.4rem);
+      line-height: .96;
+    }
+
+    .page-intro p {
+      max-width: 650px;
+      color: #d1d0c7;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.7;
+    }
+
+    .artist-count {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 10px 15px;
+      border-radius: 999px;
+      background: var(--lime);
+      color: #171810;
+      font-weight: 700;
+    }
+
+    .artist-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .artist-card {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 0 20px 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 90% 8%, rgba(217,255,98,.12), transparent 34%),
+        var(--panel);
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .artist-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(217,255,98,.65);
+    }
+
+    .artist-number {
+      padding: 18px 4px 14px;
+      color: var(--lime);
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    .artist-photo {
+      display: block;
+      width: calc(100% + 40px);
+      aspect-ratio: 4 / 3;
+      margin: 0 -20px 18px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #d9ff62, #ff805e);
+    }
+
+    .artist-card h2 {
+      margin: 26px 0 8px;
+      font-size: clamp(1.6rem, 3vw, 2.3rem);
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .artist-genre {
+      color: var(--muted);
+    }
+
+    .artist-albums {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .album-chip {
+      display: inline-block;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: .9rem;
+    }
+
+    .album-chip:hover {
+      background: var(--lime);
+      color: #171810;
+    }
+
+    .empty-state {
+      margin-top: 24px;
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 850px) {
+      .artist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      .artist-grid { grid-template-columns: 1fr; }
+      .artist-card { min-height: 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <section class="page-intro">
+      <div class="eyebrow">THE ARTISTS</div>
+      <h1>声音背后的<br>创作者。</h1>
+      <p>认识我收藏里的音乐人，浏览他们的音乐风格，以及他们在这份收藏中出现的专辑。</p>
+      <div class="artist-count" id="artist-count">正在载入艺人…</div>
+    </section>
+
+    <section class="artist-grid" id="artist-grid" aria-label="艺人列表"></section>
+    <div class="empty-state" id="empty-state" hidden>
+      没有读取到艺人资料。请确认 `js/albums-data.js` 中有 `artists` 数据，并且页面已加载该文件。
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+
+  <script>
+    const artists = window.MUSIC_VAULT?.artists || [];
+    const albums = window.MUSIC_VAULT?.albums || [];
+    const grid = document.getElementById("artist-grid");
+    const count = document.getElementById("artist-count");
+    const emptyState = document.getElementById("empty-state");
+
+    count.textContent = `${artists.length} 位艺人`;
+
+    if (artists.length === 0) {
+      emptyState.hidden = false;
+    } else {
+      artists.forEach((artist, index) => {
+        const card = document.createElement("article");
+        card.className = "artist-card";
+
+        const number = document.createElement("div");
+        number.className = "artist-number";
+        number.textContent = `ARTIST ${String(index + 1).padStart(2, "0")}`;
+
+        const photo = document.createElement("img");
+        photo.className = "artist-photo";
+        photo.src = artist.image;
+        photo.alt = `${artist.name} 照片`;
+        photo.loading = "lazy";
+        photo.onerror = () => {
+          photo.alt = `${artist.name} 的照片无法加载`;
+          photo.remove();
+        };
+
+        const info = document.createElement("div");
+
+        const name = document.createElement("h2");
+        name.textContent = artist.name || "未命名艺人";
+
+        const genre = document.createElement("div");
+        genre.className = "artist-genre";
+        genre.textContent = artist.genre || "音乐人";
+
+        info.append(name, genre);
+
+        const albumList = document.createElement("div");
+        albumList.className = "artist-albums";
+
+        const artistAlbums = albums.filter(album =>
+          Array.isArray(artist.albums) && artist.albums.includes(album.id)
+        );
+
+        artistAlbums.forEach(album => {
+          const link = document.createElement("a");
+          link.className = "album-chip";
+          link.href = `album.html?id=${encodeURIComponent(album.id)}`;
+          link.textContent = album.title;
+          albumList.appendChild(link);
+        });
+
+        card.append(number, photo, info, albumList);
+        grid.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全部专辑 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root{--bg:#11120f;--panel:#1c1e19;--text:#f4f3ec;--muted:#aaa99f;--lime:#d9ff62;--line:rgba(255,255,255,.12)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Microsoft YaHei",sans-serif}
+    main{width:min(1160px,calc(100% - 40px));margin:0 auto;padding:50px 0 90px}
+    .intro{padding:clamp(28px,6vw,68px);border:1px solid var(--line);border-radius:24px;background:radial-gradient(circle at 85% 15%,rgba(217,255,98,.22),transparent 34%),linear-gradient(135deg,#292b23,#171813)}
+    .eyebrow{color:var(--lime);font-size:.85rem;font-weight:700;letter-spacing:.18em}
+    h1{margin:16px 0;font-size:clamp(2.8rem,8vw,6.2rem);line-height:.96}
+    .intro p{max-width:650px;color:#d1d0c7;font-size:clamp(1rem,2vw,1.2rem);line-height:1.7}
+    .toolbar{display:grid;grid-template-columns:1fr auto;gap:12px;margin:26px 0 18px}
+    .toolbar input,.toolbar select{min-height:48px;padding:0 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font:inherit}
+    .toolbar input{width:100%}.result-count{margin:16px 0;color:var(--muted)}
+    .album-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+    .album-card{overflow:hidden;border:1px solid var(--line);border-radius:17px;background:var(--panel);color:inherit;text-decoration:none;transition:transform .2s,border-color .2s}
+    .album-card:hover{transform:translateY(-4px);border-color:var(--lime)}
+    .album-cover{display:grid;aspect-ratio:1;place-items:center;overflow:hidden;background:linear-gradient(135deg,#d9ff62,#ff805e);color:#171810;font-size:4rem;font-weight:900}
+    .album-cover img{width:100%;height:100%;object-fit:cover}.album-info{padding:15px}
+    .album-info h2{margin:0 0 7px;font-size:1.15rem;overflow-wrap:anywhere}.album-info p{margin:4px 0;color:var(--muted);line-height:1.45}
+    .album-genre{display:inline-block;margin-top:10px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;color:var(--lime);font-size:.85rem}
+    .message{padding:24px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);line-height:1.7}
+    @media(max-width:900px){.album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:650px){main{width:calc(100% - 28px);padding-top:24px}.album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{grid-template-columns:1fr}}
+    @media(max-width:390px){.album-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="nav-placeholder"></div>
+  <main>
+    <section class="intro">
+      <div class="eyebrow">THE COLLECTION</div>
+      <h1>全部专辑。</h1>
+      <p>浏览我的 12 张音乐收藏。搜索专辑名称、艺人或风格，再打开专辑详情。</p>
+    </section>
+    <section class="toolbar" aria-label="搜索和排序">
+      <input id="search-input" type="search" placeholder="搜索专辑、艺人或风格…" aria-label="搜索专辑">
+      <select id="sort-select" aria-label="排序方式">
+        <option value="newest">年份：从新到旧</option>
+        <option value="oldest">年份：从旧到新</option>
+        <option value="title">按专辑名称排序</option>
+      </select>
+    </section>
+    <p class="result-count" id="result-count"></p>
+    <section class="album-grid" id="album-grid" aria-label="专辑列表"></section>
+    <div class="message" id="message" hidden></div>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+  <script>
+    const vault = window.MUSIC_VAULT;
+    const albums = vault && Array.isArray(vault.albums) ? vault.albums : [];
+    const grid = document.getElementById("album-grid");
+    const searchInput = document.getElementById("search-input");
+    const sortSelect = document.getElementById("sort-select");
+    const resultCount = document.getElementById("result-count");
+    const message = document.getElementById("message");
+
+    function renderAlbums() {
+      if (!vault || !Array.isArray(vault.albums)) {
+        resultCount.textContent = "";
+        message.hidden = false;
+        message.textContent = "没有读到专辑数据。请确认 js/albums-data.js 文件存在，并且包含 window.MUSIC_VAULT.albums。";
+        return;
+      }
+
+      const keyword = searchInput.value.trim().toLowerCase();
+      const shown = albums.filter(album =>
+        [album.title, album.artist, album.genre, album.year].join(" ").toLowerCase().includes(keyword)
+      );
+
+      if (sortSelect.value === "newest") shown.sort((a,b) => (b.year || 0) - (a.year || 0));
+      if (sortSelect.value === "oldest") shown.sort((a,b) => (a.year || 0) - (b.year || 0));
+      if (sortSelect.value === "title") shown.sort((a,b) => (a.title || "").localeCompare(b.title || ""));
+
+      grid.replaceChildren();
+      resultCount.textContent = `显示 ${shown.length} / ${albums.length} 张专辑`;
+      message.hidden = shown.length !== 0;
+      if (!shown.length) {
+        message.textContent = "没有找到符合条件的专辑。试试其他搜索词。";
+        return;
+      }
+
+      shown.forEach(album => {
+        const link = document.createElement("a");
+        link.className = "album-card";
+        link.href = `album.html?id=${encodeURIComponent(album.id)}`;
+
+        const cover = document.createElement("div");
+        cover.className = "album-cover";
+        if (album.cover) {
+          const img = document.createElement("img");
+          img.src = album.cover;
+          img.alt = `${album.title} 专辑封面`;
+          img.onerror = () => { img.remove(); cover.textContent = (album.title || "♫").slice(0,1); };
+          cover.appendChild(img);
+        } else {
+          cover.textContent = (album.title || "♫").slice(0,1);
+        }
+
+        const info = document.createElement("div");
+        info.className = "album-info";
+        const title = document.createElement("h2");
+        title.textContent = album.title || "专辑名称未填写";
+        const artist = document.createElement("p");
+        artist.textContent = album.artist || "艺人信息未填写";
+        const year = document.createElement("p");
+        year.textContent = album.year ? `${album.year} 年` : "年份未填写";
+        const genre = document.createElement("span");
+        genre.className = "album-genre";
+        genre.textContent = album.genre || "风格未填写";
+        info.append(title, artist, year, genre);
+        link.append(cover, info);
+        grid.appendChild(link);
+      });
+    }
+
+    searchInput.addEventListener("input", renderAlbums);
+    sortSelect.addEventListener("change", renderAlbums);
+    renderAlbums();
+  </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>专辑详情 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --bg: #11120f;
+      --panel: #1c1e19;
+      --text: #f4f3ec;
+      --muted: #aaa99f;
+      --lime: #d9ff62;
+      --line: rgba(255, 255, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    a { color: inherit; }
+
+    main {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 42px 0 80px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 26px;
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .album-hero {
+      display: grid;
+      grid-template-columns: minmax(220px, 380px) 1fr;
+      gap: 42px;
+      align-items: center;
+    }
+
+    .cover-wrap {
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #d9ff62, #ff805e);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+    }
+
+    .cover-wrap img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .eyebrow {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: bold;
+      letter-spacing: .16em;
+    }
+
+    h1 {
+      margin: 12px 0;
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      line-height: .98;
+      overflow-wrap: anywhere;
+    }
+
+    .artist-name {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+    }
+
+    .album-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    .album-meta span {
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .description {
+      max-width: 620px;
+      color: #cfcec5;
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    .tracks-section { margin-top: 64px; }
+
+    .tracks-section h2 {
+      margin: 0 0 18px;
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+    }
+
+    .track-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .track-row {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .track-number {
+      color: var(--lime);
+      font-weight: bold;
+    }
+
+    .track-title {
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .play-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 15px;
+      background: var(--lime);
+      color: #171810;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .play-button:disabled {
+      background: #44463e;
+      color: #bbb;
+      cursor: not-allowed;
+    }
+
+    .player {
+      position: sticky;
+      bottom: 12px;
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(28, 30, 25, .96);
+    }
+
+    .player audio { width: 100%; }
+
+    .message {
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      .album-hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .cover-wrap { width: min(100%, 380px); }
+      .tracks-section { margin-top: 46px; }
+
+      .track-row {
+        grid-template-columns: 36px 1fr;
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .play-button {
+        grid-column: 2;
+        justify-self: start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <a class="back-link" href="albums.html">← 返回全部专辑</a>
+
+    <section class="album-hero" id="album-detail">
+      <div class="cover-wrap">
+        <img id="album-cover" src="" alt="">
+      </div>
+
+      <div>
+        <div class="eyebrow">ALBUM DETAIL</div>
+        <h1 id="album-title"></h1>
+        <p class="artist-name" id="album-artist"></p>
+        <div class="album-meta" id="album-meta"></div>
+        <p class="description" id="album-description"></p>
+      </div>
+    </section>
+
+    <section class="tracks-section">
+      <h2>曲目列表</h2>
+      <div class="track-list" id="track-list"></div>
+
+      <div class="player" id="player" hidden>
+        <audio id="audio-player" controls preload="none"></audio>
+      </div>
+    </section>
+
+    <div class="message" id="message" hidden></div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+
+  <script>
+    const vault = window.MUSIC_VAULT;
+    const albums = vault?.albums || [];
+    const params = new URLSearchParams(window.location.search);
+    const albumId = params.get("id");
+    const album = albums.find(item => String(item.id) === String(albumId));
+
+    const message = document.getElementById("message");
+    const albumDetail = document.getElementById("album-detail");
+    const trackList = document.getElementById("track-list");
+    const playerBox = document.getElementById("player");
+    const audioPlayer = document.getElementById("audio-player");
+
+    function showMessage(text) {
+      albumDetail.hidden = true;
+      document.querySelector(".tracks-section").hidden = true;
+      message.hidden = false;
+      message.textContent = text;
+    }
+
+    if (!vault || !Array.isArray(vault.albums)) {
+      showMessage("没有读到专辑数据。请确认 js/albums-data.js 文件存在，并且包含专辑资料。");
+    } else if (!albumId || !album) {
+      showMessage("没有找到这张专辑。请从首页、全部专辑或歌单页面重新选择。");
+    } else {
+      document.title = `${album.title} | My Music Vault`;
+
+      document.getElementById("album-title").textContent =
+        album.title || "专辑名称未填写";
+
+      const artist = album.artist ||
+        vault.artists?.find(item => item.id === album.artistId)?.name ||
+        "艺人信息未填写";
+
+      document.getElementById("album-artist").textContent = artist;
+
+      const cover = document.getElementById("album-cover");
+      cover.src = album.cover || "";
+      cover.alt = `${album.title} 专辑封面`;
+      cover.onerror = () => {
+        cover.style.display = "none";
+        document.querySelector(".cover-wrap").textContent =
+          (album.title || "♫").slice(0, 1);
+      };
+
+      document.getElementById("album-description").textContent =
+        album.description || "这张专辑还没有介绍。";
+
+      const meta = document.getElementById("album-meta");
+
+      [album.year, album.genre].filter(Boolean).forEach(value => {
+        const tag = document.createElement("span");
+        tag.textContent = value;
+        meta.appendChild(tag);
+      });
+
+      const tracks = Array.isArray(album.tracks) ? album.tracks : [];
+
+      if (tracks.length === 0) {
+        trackList.textContent = "这张专辑还没有添加曲目。";
+      } else {
+        tracks.forEach((track, index) => {
+          const row = document.createElement("div");
+          row.className = "track-row";
+
+          const number = document.createElement("div");
+          number.className = "track-number";
+          number.textContent = track.number || String(index + 1).padStart(2, "0");
+
+          const title = document.createElement("div");
+          title.className = "track-title";
+          title.textContent = track.title || `曲目 ${index + 1}`;
+
+          const button = document.createElement("button");
+          button.className = "play-button";
+          button.textContent = "▶ 播放";
+
+          if (!track.file) {
+            button.disabled = true;
+            button.textContent = "未添加音频";
+          } else {
+            button.addEventListener("click", () => {
+              audioPlayer.src = track.file;
+              playerBox.hidden = false;
+              audioPlayer.play();
+            });
+          }
+
+          row.append(number, title, button);
+          trackList.appendChild(row);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

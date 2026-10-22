@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主题歌单 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --bg: #11120f;
+      --panel: #1c1e19;
+      --text: #f4f3ec;
+      --muted: #aaa99f;
+      --lime: #d9ff62;
+      --line: rgba(255, 255, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    main {
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 50px 0 90px;
+    }
+
+    .intro {
+      padding: clamp(28px, 6vw, 68px);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(217,255,98,.23), transparent 34%),
+        linear-gradient(135deg, #292b23, #171813);
+    }
+
+    .eyebrow {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+
+    h1 {
+      margin: 16px 0;
+      font-size: clamp(2.8rem, 8vw, 6.2rem);
+      line-height: .96;
+    }
+
+    .intro p {
+      max-width: 650px;
+      color: #d1d0c7;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.7;
+    }
+
+    .playlist-list {
+      display: grid;
+      gap: 26px;
+      margin-top: 30px;
+    }
+
+    .playlist {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+    }
+
+    .playlist-header {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      gap: 24px;
+      align-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,128,94,.25), transparent 36%),
+        #20221c;
+    }
+
+    .playlist-art {
+      display: grid;
+      aspect-ratio: 1;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(140deg, #d9ff62, #ff805e 65%, #86c8e8);
+      color: #171810;
+      font-size: 4rem;
+      font-weight: 900;
+    }
+
+    .playlist-number {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+    }
+
+    .playlist h2 {
+      margin: 10px 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+
+    .playlist-description {
+      max-width: 600px;
+      margin: 0;
+      color: #cfcec5;
+      line-height: 1.7;
+    }
+
+    .playlist-count {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    .album-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding: 20px 24px 24px;
+    }
+
+    .album-card {
+      display: flex;
+      gap: 13px;
+      align-items: center;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .album-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--lime);
+    }
+
+    .album-cover {
+      flex: 0 0 66px;
+      width: 66px;
+      aspect-ratio: 1;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #d9ff62, #ff805e);
+      color: #171810;
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .album-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .album-info {
+      min-width: 0;
+    }
+
+    .album-info h3 {
+      margin: 0 0 5px;
+      font-size: 1rem;
+      overflow-wrap: anywhere;
+    }
+
+    .album-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.4;
+    }
+
+    .empty-state {
+      margin-top: 24px;
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 850px) {
+      .album-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 600px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      .playlist-header {
+        grid-template-columns: 110px 1fr;
+        gap: 16px;
+        padding: 16px;
+      }
+
+      .playlist-art { font-size: 2.8rem; }
+      .album-list { grid-template-columns: 1fr; padding: 14px; }
+    }
+
+    @media (max-width: 390px) {
+      .playlist-header { grid-template-columns: 1fr; }
+      .playlist-art { width: 110px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <section class="intro">
+      <div class="eyebrow">CURATED PLAYLISTS</div>
+      <h1>为不同心情<br>挑选的声音。</h1>
+      <p>从夜晚兜风到华语回忆，这些主题歌单把收藏里的专辑放在一起，方便你按氛围继续探索。</p>
+    </section>
+
+    <section class="playlist-list" id="playlist-list" aria-label="主题歌单"></section>
+
+    <div class="empty-state" id="empty-state" hidden>
+      没有读取到歌单。请确认 `js/albums-data.js` 中存在 `playlists` 数据。
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+
+  <script>
+    const playlists = window.MUSIC_VAULT?.playlists || [];
+    const albums = window.MUSIC_VAULT?.albums || [];
+    const list = document.getElementById("playlist-list");
+    const emptyState = document.getElementById("empty-state");
+
+    if (playlists.length === 0) {
+      emptyState.hidden = false;
+    } else {
+      playlists.forEach((playlist, index) => {
+        const section = document.createElement("article");
+        section.className = "playlist";
+
+        const header = document.createElement("div");
+        header.className = "playlist-header";
+
+        const art = document.createElement("div");
+        art.className = "playlist-art";
+        art.textContent = "♫";
+
+        const heading = document.createElement("div");
+
+        const number = document.createElement("div");
+        number.className = "playlist-number";
+        number.textContent = `PLAYLIST ${String(index + 1).padStart(2, "0")}`;
+
+        const title = document.createElement("h2");
+        title.textContent = playlist.title || "未命名歌单";
+
+        const description = document.createElement("p");
+        description.className = "playlist-description";
+        description.textContent = playlist.description || "这张歌单还没有介绍。";
+
+        const playlistAlbums = albums.filter(album =>
+          Array.isArray(playlist.albumIds) && playlist.albumIds.includes(album.id)
+        );
+
+        const count = document.createElement("span");
+        count.className = "playlist-count";
+        count.textContent = `${playlistAlbums.length} 张专辑`;
+
+        heading.append(number, title, description, count);
+        header.append(art, heading);
+
+        const albumList = document.createElement("div");
+        albumList.className = "album-list";
+
+        if (playlistAlbums.length === 0) {
+          const message = document.createElement("div");
+          message.className = "empty-state";
+          message.textContent = "这张歌单还没有匹配到专辑。请检查 playlist 中的 albumIds 是否和专辑 id 一致。";
+          albumList.appendChild(message);
+        } else {
+          playlistAlbums.forEach(album => {
+            const link = document.createElement("a");
+            link.className = "album-card";
+            link.href = `album.html?id=${encodeURIComponent(album.id)}`;
+
+            const cover = document.createElement("div");
+            cover.className = "album-cover";
+
+            if (album.cover) {
+              const image = document.createElement("img");
+              image.src = album.cover;
+              image.alt = `${album.title} 专辑封面`;
+              image.onerror = () => {
+                cover.textContent = (album.title || "♫").slice(0, 1);
+              };
+              cover.appendChild(image);
+            } else {
+              cover.textContent = (album.title || "♫").slice(0, 1);
+            }
+
+            const info = document.createElement("div");
+            info.className = "album-info";
+
+            const albumTitle = document.createElement("h3");
+            albumTitle.textContent = album.title || "未命名专辑";
+
+            const artist = document.createElement("p");
+            artist.textContent = `${album.artist || "未知艺人"} · ${album.year || "年份未知"}`;
+
+            info.append(albumTitle, artist);
+            link.append(cover, info);
+            albumList.appendChild(link);
+          });
+        }
+
+        section.append(header, albumList);
+        list.appendChild(section);
+      });
+    }
+  </script>
+</body>
+</html>
