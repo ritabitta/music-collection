@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>专辑详情 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --bg: #11120f;
+      --panel: #1c1e19;
+      --text: #f4f3ec;
+      --muted: #aaa99f;
+      --lime: #d9ff62;
+      --line: rgba(255, 255, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    a { color: inherit; }
+
+    main {
+      width: min(1100px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 42px 0 80px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 26px;
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .album-hero {
+      display: grid;
+      grid-template-columns: minmax(220px, 380px) 1fr;
+      gap: 42px;
+      align-items: center;
+    }
+
+    .cover-wrap {
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #d9ff62, #ff805e);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+    }
+
+    .cover-wrap img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .eyebrow {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: bold;
+      letter-spacing: .16em;
+    }
+
+    h1 {
+      margin: 12px 0;
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      line-height: .98;
+      overflow-wrap: anywhere;
+    }
+
+    .artist-name {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+    }
+
+    .album-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    .album-meta span {
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .description {
+      max-width: 620px;
+      color: #cfcec5;
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 18px;
+      border: 1px solid var(--lime);
+      border-radius: 999px;
+      background: var(--lime);
+      color: #171810;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .action-button.secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    .action-button.added {
+      background: #3c4130;
+      border-color: var(--lime);
+      color: var(--lime);
+    }
+
+    .video-section { margin-top: 54px; }
+
+    .video-section h2 {
+      margin: 0 0 18px;
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+    }
+
+    .video-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #000;
+      border: 1px solid var(--line);
+    }
+
+    .video-frame iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .video-note a { color: var(--lime); }
+
+    .tracks-section { margin-top: 64px; }
+
+    .tracks-section h2 {
+      margin: 0 0 18px;
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+    }
+
+    .track-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .track-row {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .track-number {
+      color: var(--lime);
+      font-weight: bold;
+    }
+
+    .track-title {
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .message {
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      .album-hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .cover-wrap { width: min(100%, 380px); }
+      .video-section { margin-top: 40px; }
+      .tracks-section { margin-top: 46px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <a class="back-link" href="albums.html" data-i18n="album.back">← 返回全部专辑</a>
+
+    <section class="album-hero" id="album-detail">
+      <div class="cover-wrap">
+        <img id="album-cover" src="" alt="">
+      </div>
+
+      <div>
+        <div class="eyebrow" data-i18n="album.eyebrow">ALBUM DETAIL</div>
+        <h1 id="album-title"></h1>
+        <p class="artist-name" id="album-artist"></p>
+        <div class="album-meta" id="album-meta"></div>
+        <p class="description" id="album-description"></p>
+
+        <div class="action-bar">
+          <a class="action-button secondary" id="watch-button" href="#video" data-i18n="album.watch">观看 MV</a>
+          <button class="action-button secondary" id="fav-button" type="button">加入我的收藏库 ♥</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="video-section" id="video">
+      <h2 data-i18n="album.tracks">音乐视频</h2>
+      <div class="video-frame">
+        <iframe id="video-player" src=""
+                title="音乐视频"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen loading="lazy"></iframe>
+      </div>
+      <p class="video-note" id="video-note"></p>
+    </section>
+
+    <section class="tracks-section">
+      <h2 data-i18n="album.tracks">曲目列表</h2>
+      <div class="track-list" id="track-list"></div>
+    </section>
+
+    <div class="message" id="message" hidden></div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+
+  <script>
+    const I18N = window.I18N;
+    const vault = window.MUSIC_VAULT;
+    const albums = vault?.albums || [];
+    const params = new URLSearchParams(window.location.search);
+    const albumId = params.get("id");
+    const album = albums.find(item => String(item.id) === String(albumId));
+
+    const message = document.getElementById("message");
+    const albumDetail = document.getElementById("album-detail");
+    const trackList = document.getElementById("track-list");
+
+    function showMessage(text) {
+      albumDetail.hidden = true;
+      document.querySelector(".video-section").hidden = true;
+      document.querySelector(".tracks-section").hidden = true;
+      message.hidden = false;
+      message.textContent = text;
+    }
+
+    if (!vault || !Array.isArray(vault.albums)) {
+      showMessage("没有读到专辑数据。请确认 js/albums-data.js 文件存在，并且包含专辑资料。");
+    } else if (!albumId || !album) {
+      showMessage("没有找到这张专辑。请从首页、全部专辑或歌单页面重新选择。");
+    } else {
+      document.title = `${I18N.pick(album.title, album.titleEn)} | My Music Vault`;
+
+      document.getElementById("album-title").textContent =
+        I18N.pick(album.title, album.titleEn) || "专辑名称未填写";
+
+      const artist = I18N.pick(
+        album.artist,
+        vault.artists?.find(item => item.id === album.artistId)?.nameEn
+      ) || "艺人信息未填写";
+
+      document.getElementById("album-artist").textContent = artist;
+
+      const cover = document.getElementById("album-cover");
+      cover.src = album.cover || "";
+      cover.alt = `${album.title} 专辑封面`;
+      cover.onerror = () => {
+        cover.style.display = "none";
+        document.querySelector(".cover-wrap").textContent =
+          (album.title || "♫").slice(0, 1);
+      };
+
+      document.getElementById("album-description").textContent =
+        I18N.pick(album.description, album.descriptionEn) || "这张专辑还没有介绍。";
+
+      const meta = document.getElementById("album-meta");
+      const metaValues = [album.year, I18N.genre(album.genre)].filter(Boolean);
+      metaValues.forEach(value => {
+        const tag = document.createElement("span");
+        tag.textContent = value;
+        meta.appendChild(tag);
+      });
+
+      // 音乐视频
+      const videoPlayer = document.getElementById("video-player");
+      const videoNote = document.getElementById("video-note");
+      const watchButton = document.getElementById("watch-button");
+
+      const videoTitle = album.videoTitle || (album.tracks[0] && album.tracks[0].title) || album.title;
+      if (album.videoId) {
+        videoPlayer.src = window.biliEmbed(album.videoId);
+        const searchUrl = window.biliSearch(`${album.artist} ${videoTitle}`);
+        videoNote.innerHTML = I18N.pick(
+          `视频来自 B 站。若无法播放，可<a href="${searchUrl}" target="_blank" rel="noopener">在 B 站搜索 MV ↗</a>`,
+          `Video from Bilibili. If it won't play, <a href="${searchUrl}" target="_blank" rel="noopener">search the MV on Bilibili ↗</a>`
+        );
+        watchButton.addEventListener("click", (e) => {
+          e.preventDefault();
+          videoPlayer.src = window.biliEmbed(album.videoId) + "&autoplay=1";
+        });
+      } else {
+        videoPlayer.closest(".video-frame").style.display = "none";
+        videoNote.textContent = I18N.pick("这张专辑还没有添加视频。", "No video added for this album yet.");
+      }
+
+      // 曲目列表
+      const tracks = Array.isArray(album.tracks) ? album.tracks : [];
+      if (tracks.length === 0) {
+        trackList.textContent = I18N.pick("这张专辑还没有添加曲目。", "No tracks added for this album yet.");
+      } else {
+        tracks.forEach((track, index) => {
+          const row = document.createElement("div");
+          row.className = "track-row";
+
+          const number = document.createElement("div");
+          number.className = "track-number";
+          number.textContent = track.number || String(index + 1).padStart(2, "0");
+
+          const title = document.createElement("div");
+          title.className = "track-title";
+          title.textContent = track.title || `曲目 ${index + 1}`;
+
+          row.append(number, title);
+          trackList.appendChild(row);
+        });
+      }
+
+      // 收藏按钮
+      const favButton = document.getElementById("fav-button");
+      function updateFavButton() {
+        const user = window.Auth.currentUser();
+        if (!user) {
+          favButton.textContent = I18N.pick("登录后收藏 ♥", "Log in to save ♥");
+          favButton.classList.remove("added");
+        } else if (window.Auth.isFavorite(album.id)) {
+          favButton.textContent = I18N.pick("已加入收藏库 ✓", "In my library ✓");
+          favButton.classList.add("added");
+        } else {
+          favButton.textContent = I18N.pick("加入我的收藏库 ♥", "Add to my library ♥");
+          favButton.classList.remove("added");
+        }
+      }
+
+      favButton.addEventListener("click", () => {
+        if (!window.Auth.currentUser()) {
+          window.location.href = "login.html";
+          return;
+        }
+        window.Auth.toggleFavorite(album.id);
+        updateFavButton();
+      });
+
+      updateFavButton();
+    }
+  </script>
+</body>
+</html>

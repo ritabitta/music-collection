@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音乐视频 | My Music Vault</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    :root {
+      --bg: #11120f;
+      --panel: #1c1e19;
+      --text: #f4f3ec;
+      --muted: #aaa99f;
+      --lime: #d9ff62;
+      --line: rgba(255, 255, 255, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    a { color: inherit; }
+
+    main {
+      width: min(1160px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 50px 0 90px;
+    }
+
+    .intro {
+      padding: clamp(28px, 6vw, 68px);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(134, 200, 232, .22), transparent 34%),
+        linear-gradient(135deg, #292b23, #171813);
+    }
+
+    .eyebrow {
+      color: var(--lime);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+    }
+
+    h1 {
+      margin: 16px 0;
+      font-size: clamp(2.8rem, 8vw, 6.2rem);
+      line-height: .96;
+    }
+
+    .intro p {
+      max-width: 680px;
+      color: #d1d0c7;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.7;
+    }
+
+    .intro .note {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 22px;
+      margin-top: 34px;
+    }
+
+    .video-card {
+      min-width: 0;
+    }
+
+    .video-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #000;
+    }
+
+    .video-frame iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 13px;
+    }
+
+    .video-meta h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      overflow-wrap: anywhere;
+    }
+
+    .video-meta p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .video-meta a {
+      color: var(--lime);
+      font-size: .82rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .video-meta a:hover { text-decoration: underline; }
+
+    @media (max-width: 760px) {
+      main {
+        width: calc(100% - 28px);
+        padding-top: 24px;
+      }
+
+      .video-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <section class="intro">
+      <div class="eyebrow" data-i18n="videos.eyebrow">MUSIC VIDEOS</div>
+      <h1 data-i18n-html="videos.title">观看官方<br>音乐视频。</h1>
+      <p data-i18n="videos.intro">收藏里每张专辑的官方音乐视频，从 B 站嵌入。本站不再托管任何音频文件。</p>
+      <span class="note" data-i18n="videos.note">视频均嵌入自 B 站。</span>
+    </section>
+
+    <section class="video-grid" id="video-grid" aria-label="音乐视频列表"></section>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="nav.js"></script>
+  <script src="js/albums-data.js"></script>
+
+  <script>
+    const I18N = window.I18N;
+    const vault = window.MUSIC_VAULT;
+    const albums = vault?.albums || [];
+    const grid = document.getElementById("video-grid");
+
+    albums.forEach(album => {
+      if (!album.videoId) return;
+
+      const card = document.createElement("article");
+      card.className = "video-card";
+
+      const frame = document.createElement("div");
+      frame.className = "video-frame";
+      const iframe = document.createElement("iframe");
+      iframe.src = window.biliEmbed(album.videoId);
+      iframe.title = `${album.title} ${album.videoTitle || ""}`;
+      iframe.loading = "lazy";
+      iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+      iframe.setAttribute("allowfullscreen", "");
+      frame.appendChild(iframe);
+
+      const meta = document.createElement("div");
+      meta.className = "video-meta";
+
+      const info = document.createElement("div");
+      const title = document.createElement("h2");
+      title.textContent = `${I18N.pick(album.title, album.titleEn)} · ${album.videoTitle || ""}`;
+      const artist = document.createElement("p");
+      artist.textContent = I18N.pick(album.artist, (vault.artists.find(a => a.id === album.artistId) || {}).nameEn);
+      info.append(title, artist);
+
+      const link = document.createElement("a");
+      link.href = window.biliSearch(`${album.artist} ${album.videoTitle}`);
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = I18N.pick("在 B 站打开 ↗", "Open on Bilibili ↗");
+
+      meta.append(info, link);
+      card.append(frame, meta);
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
